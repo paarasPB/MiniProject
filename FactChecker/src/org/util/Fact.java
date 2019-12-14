@@ -1,19 +1,16 @@
 package org.util;
 
-import java.util.ArrayList;
-import java.util.List;
-
 public class Fact {
 
 	private int factId;
 	private String factString;
-	private float factValue;
+	private Double factValue;
 
 
 	Fact() {
 	}
 
-	Fact(int factId, String factString, float factValue) {
+	Fact(int factId, String factString, Double factValue) {
 		this.factId = factId;
 		this.factString = factString;
 		this.factValue = factValue;
@@ -35,11 +32,11 @@ public class Fact {
 		this.factString = factString;
 	}
 
-	public float getFactValue() {
+	public Double getFactValue() {
 		return factValue;
 	}
 
-	public void setFactValue(float factValue) {
+	public void setFactValue(double factValue) {
 		this.factValue = factValue;
 	}
 

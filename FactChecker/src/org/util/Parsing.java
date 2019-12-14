@@ -54,7 +54,7 @@ public class Parsing {
 			if (!line.startsWith("FactID")) {
 
 				Fact fact = new Fact(Integer.valueOf(line.split("\t")[0]), line.split("\t")[1].trim(),
-						Float.valueOf(line.split("\t")[2]));
+						Double.valueOf(line.split("\t")[2]));
 				// Fact fact = new Fact();
 				NLPTriple nlpTriple = new NLPTriple();
 
@@ -143,7 +143,7 @@ public class Parsing {
 			if (!line.startsWith("FactID")) {
 
 				Fact fact = new Fact(Integer.valueOf(line.split("\t")[0]), line.split("\t")[1].trim(),
-						Float.valueOf(line.split("\t")[2]));
+						Double.valueOf(line.split("\t")[2]));
 				// Fact fact = new Fact();
 				NLPTriple nlpTriple = new NLPTriple();
 

@@ -16,8 +16,8 @@ import edu.stanford.nlp.simple.Document;
 import edu.stanford.nlp.simple.Sentence;
 
 public class Learner {
-	String filePath;
-	Map<String, Map<String, List<Map<String, Double>>>> model;
+	private String filePath;
+	private Map<String, Map<String, List<Map<String, Double>>>> model;
 
 	Learner(String filePath) {
 		this.filePath = filePath;
@@ -29,7 +29,7 @@ public class Learner {
 		props.setProperty("annotators", "tokenize, ssplit, pos, lemma, ner, parse, dcoref");
 
 		List<String> list = new ArrayList<>();
-		List<Fact> factList = new ArrayList<Fact>();
+		// List<Fact> factList = new ArrayList<Fact>();
 		try (BufferedReader br = new BufferedReader(new FileReader(new java.io.File(this.filePath)))) {
 			list = br.lines().collect(Collectors.toList());
 
@@ -46,10 +46,10 @@ public class Learner {
 			if (!line.startsWith("FactID")) {
 
 				Fact fact = new Fact(Integer.valueOf(line.split("\t")[0]), line.split("\t")[1].trim(),
-						Float.valueOf(line.split("\t")[2]));
+						Double.valueOf(line.split("\t")[2]));
 				// System.out.println(fact.getFactString() + " == " + fact.getFactValue());
 
-				factList.add(fact);
+				// factList.add(fact);
 				for (Sentence sent : new Document(fact.getFactString()).sentences()) {
 
 					for (RelationTriple triple : sent.openieTriples()) {
@@ -118,10 +118,22 @@ public class Learner {
 		}
 	}
 
+	public Checker createChecker() {
+		Checker checker = new Checker();
+		checker.setModel(this.model);
+		return checker;
+
+	}
+
 	public static void main(String[] args) {
 		Learner learner = new Learner("SNLP2019_training.tsv");
 		learner.learn();
-		System.out.println(learner.model);
-		
+		// System.out.println(learner.model);
+		Checker checkerForTestData = learner.createChecker();
+
+		List<Fact> factsResults = checkerForTestData.checkFacts("SNLP2019_test.tsv");
+		for (Fact fact : factsResults) {
+			System.out.println(fact.getFactString() + " has value: " + fact.getFactValue());
+		}
 	}
 }
