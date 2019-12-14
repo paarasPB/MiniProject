@@ -105,7 +105,6 @@ public class Learner {
 
 							model.put(subject.substring(0, subject.length() - 1), relation);
 						}
-
 					}
 				}
 
