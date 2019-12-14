@@ -8,7 +8,7 @@ public class Fact {
 	private int factId;
 	private String factString;
 	private float factValue;
-	private NLPTriple triple;
+
 
 	Fact() {
 	}
@@ -43,11 +43,5 @@ public class Fact {
 		this.factValue = factValue;
 	}
 
-	public NLPTriple getTriple() {
-		return triple;
-	}
 
-	public void setTriple(NLPTriple triple) {
-		this.triple = triple;
-	}
 }
