@@ -56,8 +56,8 @@ public class Parsing {
 		// System.out.println(fact.getFactString() + " == " + fact.getFactValue());
 
 		// Annotation document = new Annotation(fact.getFactString());
-		Annotation document = new Annotation("New York City is IBM's innovation place.");
-		//New York City is IBM's innovation place.
+		Annotation document = new Annotation("Poul Anderson is The Boat of a Million Years' generator.");
+		// New York City is IBM's innovation place.
 		pipeline.annotate(document);
 
 		List<CoreMap> sentences = document.get(SentencesAnnotation.class);
@@ -66,6 +66,8 @@ public class Parsing {
 			int i = 0;
 			String prevNe = "";
 			String entity = "";
+			boolean isSubjectSet = false;
+
 			for (CoreLabel token : sentence.get(TokensAnnotation.class)) {
 
 				String word = token.get(TextAnnotation.class);
@@ -75,12 +77,20 @@ public class Parsing {
 				String ne = token.get(NamedEntityTagAnnotation.class);
 
 				System.out.println(word + " ," + ne + " ," + pos);
-				if (pos.equalsIgnoreCase("NNP") ) {
-					
-					nlpTriple.setSubject( nlpTriple.getSubject() == null ? word + "_":  nlpTriple.getSubject()+  word + "_");
-				} 
+				if (pos.equalsIgnoreCase("NNP") && !isSubjectSet) {
+
+					nlpTriple.setSubject(
+							nlpTriple.getSubject() == null ? word + "_" : nlpTriple.getSubject() + word + "_");
+				}
+				if (pos.equalsIgnoreCase("NNP") && isSubjectSet) {
+
+					nlpTriple.setObject(
+							nlpTriple.getObject() == null ? word + "_" : nlpTriple.getObject() + word + "_");
+				}
+
 				if (pos.equalsIgnoreCase("NN")) {
-					nlpTriple.setPredicate( nlpTriple.getPredicate() == null ? word + "_":  nlpTriple.getPredicate()+  word + "_");
+					nlpTriple.setPredicate(
+							nlpTriple.getPredicate() == null ? word + "_" : nlpTriple.getPredicate() + word + "_");
 
 				}
 
@@ -107,12 +117,14 @@ public class Parsing {
 			}
 
 		}
-		nlpTriple.setSubject(nlpTriple.getSubject().substring(0, nlpTriple.getSubject().length()-1));
-		nlpTriple.setPredicate(nlpTriple.getPredicate().substring(0, nlpTriple.getPredicate().length()-1));
+		nlpTriple.setSubject(nlpTriple.getSubject().substring(0, nlpTriple.getSubject().length() - 1));
+		nlpTriple.setObject(nlpTriple.getObject().substring(0, nlpTriple.getObject().length() - 1));
+		nlpTriple.setPredicate(nlpTriple.getPredicate().substring(0, nlpTriple.getPredicate().length() - 1));
 
 		fact.setTriple(nlpTriple);
 		factList.add(fact);
-		System.out.println("subject: " + fact.getTriple().getSubject() + " predicate: " + fact.getTriple().getPredicate());
+		System.out.println(
+				"subject: " + fact.getTriple().getSubject() + " predicate: " + fact.getTriple().getPredicate());
 		// }
 		// }
 
