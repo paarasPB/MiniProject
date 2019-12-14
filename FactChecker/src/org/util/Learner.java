@@ -17,14 +17,14 @@ import edu.stanford.nlp.simple.Sentence;
 
 public class Learner {
 	String filePath;
-	Map<String, Map<String, List<String>>> model;
+	Map<String, Map<String, List<Map<String, Double>>>> model;
 
 	Learner(String filePath) {
 		this.filePath = filePath;
 	}
 
 	void learn() {
-		model = new HashMap<String, Map<String, List<String>>>();
+		model = new HashMap<String, Map<String, List<Map<String, Double>>>>();
 		Properties props = new Properties();
 		props.setProperty("annotators", "tokenize, ssplit, pos, lemma, ner, parse, dcoref");
 
@@ -83,14 +83,18 @@ public class Learner {
 							if (model.get(subject.substring(0, subject.length() - 1))
 									.containsKey(predicate.substring(0, predicate.length() - 1))) {
 
+								Map<String, Double> innerMap = new HashMap<String, Double>();
+
+								innerMap.put(object.substring(0, object.length() - 1), (double) fact.getFactValue());
 								model.get(subject.substring(0, subject.length() - 1))
-										.get(predicate.substring(0, predicate.length() - 1))
-										.add(object.substring(0, object.length() - 1));
+										.get(predicate.substring(0, predicate.length() - 1)).add(innerMap);
 
 							} else {
 
-								List<String> objectList = new ArrayList<String>();
-								objectList.add(object.substring(0, object.length() - 1));
+								List<Map<String, Double>> objectList = new ArrayList<Map<String, Double>>();
+								Map<String, Double> innerMap = new HashMap<String, Double>();
+								innerMap.put(object.substring(0, object.length() - 1), (double) fact.getFactValue());
+								objectList.add(innerMap);
 
 								model.get(subject.substring(0, subject.length() - 1))
 										.put(predicate.substring(0, predicate.length() - 1), objectList);
@@ -98,9 +102,11 @@ public class Learner {
 							}
 
 						} else {
-							Map<String, List<String>> relation = new HashMap<String, List<String>>();
-							List<String> objectList = new ArrayList<String>();
-							objectList.add(object.substring(0, object.length() - 1));
+							Map<String, List<Map<String, Double>>> relation = new HashMap<String, List<Map<String, Double>>>();
+							List<Map<String, Double>> objectList = new ArrayList<Map<String, Double>>();
+							Map<String, Double> innerMap = new HashMap<String, Double>();
+							innerMap.put(object.substring(0, object.length() - 1), (double) fact.getFactValue());
+							objectList.add(innerMap);
 							relation.put(predicate.substring(0, predicate.length() - 1), objectList);
 
 							model.put(subject.substring(0, subject.length() - 1), relation);
@@ -116,5 +122,6 @@ public class Learner {
 		Learner learner = new Learner("SNLP2019_training.tsv");
 		learner.learn();
 		System.out.println(learner.model);
+		
 	}
 }
