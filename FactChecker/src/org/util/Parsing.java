@@ -82,7 +82,7 @@ public class Parsing {
 
 	public static void getNLPRelationTriples() {
 
-		Document document = new Document("Barack Obama was born in Jammu");
+		Document document = new Document("The Aristocats stars Heather Graham");
 
 		for (Sentence sent : document.sentences()) {
 
@@ -117,11 +117,11 @@ public class Parsing {
 		}
 	}
 
-	public static void main(String[] args) {
+	public static void main1(String[] args) {
 		getNLPRelationTriples();
 	}
 
-	public static void main1(String[] args) throws IOException {
+	public static void main(String[] args) throws IOException {
 
 		// creates a StanfordCoreNLP object, with POS tagging, lemmatization, NER,
 		// parsing, and coreference resolution
@@ -138,10 +138,11 @@ public class Parsing {
 
 		}
 
-		for (String line : list) {
+		//for (String line : list) {
 
-			if (!line.startsWith("FactID")) {
+			//if (!line.startsWith("FactID")) {
 
+		String line="1\tThe Aristocats stars Heather Graham\t1.0";
 				Fact fact = new Fact(Integer.valueOf(line.split("\t")[0]), line.split("\t")[1].trim(),
 						Double.valueOf(line.split("\t")[2]));
 				// Fact fact = new Fact();
@@ -203,8 +204,8 @@ public class Parsing {
 
 				// fact.setTriple(nlpTriple); factList.add(fact);
 
-			}
-		}
+			//}
+		//}
 
 		for (int i = 0; i < factList.size(); i++) {
 			// System.out.println("subject: " + factList.get(i).getTriple().getSubject() + "

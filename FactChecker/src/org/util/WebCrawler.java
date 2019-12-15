@@ -43,8 +43,9 @@ public class WebCrawler {
 		}
 	}
 
-	public String scraping(String subject) throws IOException {
-		URL url = new URL("https://en.wikipedia.org/w/index.php?action=raw&title=" + subject.replace(" ", "_"));
+	public static boolean scraping(String subject, String predicate, String object) throws IOException {
+
+		URL url = new URL("https://en.wikipedia.org/w/index.php?title=" + subject.replace(" ", "_"));
 		String text = "";
 		try (BufferedReader br = new BufferedReader(new InputStreamReader(url.openConnection().getInputStream()))) {
 			String line = null;
@@ -54,21 +55,21 @@ public class WebCrawler {
 						&& !line.startsWith("<center>") && !line.startsWith("---")) {
 					text += line;
 				}
-				if (text.length() > 200) {
-					break;
-				}
+				// if (text.length() > 500) {
+				// break;
+				// }
 			}
+			//System.out.println(text.toLowerCase().contains(object.toLowerCase()));
 		}
-		return text;
+		return text.toLowerCase().contains(object.toLowerCase());
 
 	}
 
 	public static void main(String[] args) {
 		// new WebCrawler().getPageLinks("https://www.wikipedia.org", 1);
 		try {
-			System.out.println(new WebCrawler().scraping("Camp Rock"));
+			 WebCrawler.scraping("Ginger's", "stars", "Cairo");
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}

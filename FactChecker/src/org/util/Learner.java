@@ -52,64 +52,68 @@ public class Learner {
 				// factList.add(fact);
 				for (Sentence sent : new Document(fact.getFactString()).sentences()) {
 
+					int c = 0;
 					for (RelationTriple triple : sent.openieTriples()) {
+						if (c == 0) {
+							// System.out.println(triple + " == " + fact.getFactValue());
 
-						// System.out.println(triple + " == " + fact.getFactValue());
+							String subject = "";
+							for (CoreLabel coreLabel : triple.subject) {
+								subject += coreLabel.originalText() + "_";
 
-						String subject = "";
-						for (CoreLabel coreLabel : triple.subject) {
-							subject += coreLabel.originalText() + "_";
+							}
+							// System.out.println("subjects: " + subject.substring(0, subject.length() -
+							// 1));
 
-						}
-						// System.out.println("subjects: " + subject.substring(0, subject.length() -
-						// 1));
+							String object = "";
 
-						String object = "";
+							for (CoreLabel coreLabel : triple.object) {
+								object += coreLabel.originalText() + "_";
+							}
+							// System.out.println("objects: " + object.substring(0, object.length() - 1));
 
-						for (CoreLabel coreLabel : triple.object) {
-							object += coreLabel.originalText() + "_";
-						}
-						// System.out.println("objects: " + object.substring(0, object.length() - 1));
+							String predicate = "";
+							for (CoreLabel coreLabel : triple.relation) {
+								predicate += coreLabel.originalText() + "_";
+							}
+							// System.out.println("predicate: " + predicate.substring(0, predicate.length()
+							// - 1));
 
-						String predicate = "";
-						for (CoreLabel coreLabel : triple.relation) {
-							predicate += coreLabel.originalText() + "_";
-						}
-						// System.out.println("predicate: " + predicate.substring(0, predicate.length()
-						// - 1));
+							if (model.containsKey(subject.substring(0, subject.length() - 1))) {
 
-						if (model.containsKey(subject.substring(0, subject.length() - 1))) {
+								if (model.get(subject.substring(0, subject.length() - 1))
+										.containsKey(predicate.substring(0, predicate.length() - 1))) {
 
-							if (model.get(subject.substring(0, subject.length() - 1))
-									.containsKey(predicate.substring(0, predicate.length() - 1))) {
+									Map<String, Double> innerMap = new HashMap<String, Double>();
 
-								Map<String, Double> innerMap = new HashMap<String, Double>();
+									innerMap.put(object.substring(0, object.length() - 1),
+											(double) fact.getFactValue());
+									model.get(subject.substring(0, subject.length() - 1))
+											.get(predicate.substring(0, predicate.length() - 1)).add(innerMap);
 
-								innerMap.put(object.substring(0, object.length() - 1), (double) fact.getFactValue());
-								model.get(subject.substring(0, subject.length() - 1))
-										.get(predicate.substring(0, predicate.length() - 1)).add(innerMap);
+								} else {
+
+									List<Map<String, Double>> objectList = new ArrayList<Map<String, Double>>();
+									Map<String, Double> innerMap = new HashMap<String, Double>();
+									innerMap.put(object.substring(0, object.length() - 1),
+											(double) fact.getFactValue());
+									objectList.add(innerMap);
+
+									model.get(subject.substring(0, subject.length() - 1))
+											.put(predicate.substring(0, predicate.length() - 1), objectList);
+
+								}
 
 							} else {
-
+								Map<String, List<Map<String, Double>>> relation = new HashMap<String, List<Map<String, Double>>>();
 								List<Map<String, Double>> objectList = new ArrayList<Map<String, Double>>();
 								Map<String, Double> innerMap = new HashMap<String, Double>();
 								innerMap.put(object.substring(0, object.length() - 1), (double) fact.getFactValue());
 								objectList.add(innerMap);
+								relation.put(predicate.substring(0, predicate.length() - 1), objectList);
 
-								model.get(subject.substring(0, subject.length() - 1))
-										.put(predicate.substring(0, predicate.length() - 1), objectList);
-
+								model.put(subject.substring(0, subject.length() - 1), relation);
 							}
-
-						} else {
-							Map<String, List<Map<String, Double>>> relation = new HashMap<String, List<Map<String, Double>>>();
-							List<Map<String, Double>> objectList = new ArrayList<Map<String, Double>>();
-							Map<String, Double> innerMap = new HashMap<String, Double>();
-							innerMap.put(object.substring(0, object.length() - 1), (double) fact.getFactValue());
-							objectList.add(innerMap);
-							relation.put(predicate.substring(0, predicate.length() - 1), objectList);
-
-							model.put(subject.substring(0, subject.length() - 1), relation);
 						}
 					}
 				}
@@ -131,13 +135,14 @@ public class Learner {
 		// System.out.println(learner.model);
 		Checker checkerForTestData = learner.createChecker();
 
-		List<Fact> factsResults = checkerForTestData.checkFacts("SNLP2019_test.tsv");
+		List<Fact> factsResults = checkerForTestData.checkFacts("SNLP2019_training.tsv");
+		 checkerForTestData.writeResults("result.ttl");
 
-		for (Fact fact : factsResults) {
-			System.out.println(fact.getFactString() + " has value: " + fact.getFactValue());
-		}
-		
-		Fact factsResult = checkerForTestData.checkFact("1\tJohn A. Macdonald's death place is New York City.");
-		System.out.println(factsResult.getFactString()+" got: "+ factsResult.getFactValue());
+		/*
+		 * for (Fact fact : factsResults) { System.out.println(fact.getFactString() +
+		 * " has value: " + fact.getFactValue()); }
+		 */
+		Fact factsResult = checkerForTestData.checkFact("1\tJomo Kenyatta's office is Kenya.");
+		System.out.println(factsResult.getFactString() + " got: " + factsResult.getFactValue());
 	}
 }

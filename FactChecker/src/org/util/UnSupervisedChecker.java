@@ -20,11 +20,17 @@ import edu.stanford.nlp.ling.CoreLabel;
 import edu.stanford.nlp.simple.Document;
 import edu.stanford.nlp.simple.Sentence;
 
-public class Checker {
+public class UnSupervisedChecker {
 
 	private String filePath;
 	private Map<String, Map<String, List<Map<String, Double>>>> model;
 	private List<Fact> factList;
+
+	public static void main(String[] args) {
+		UnSupervisedChecker checker = new UnSupervisedChecker();
+		checker.checkFacts("SNLP2019_test.tsv");
+		checker.writeResults("result.ttl");
+	}
 
 	public List<Fact> checkFacts(String filePath) {
 		this.filePath = filePath;
@@ -79,36 +85,28 @@ public class Checker {
 							// System.out.println("predicate: " + predicate.substring(0, predicate.length()
 							// - 1));
 
-							if (model.containsKey(subject.substring(0, subject.length() - 1))) {
-
-								if (model.get(subject.substring(0, subject.length() - 1))
-										.containsKey(predicate.substring(0, predicate.length() - 1))) {
-
-									for (int i = 0; i < model.get(subject.substring(0, subject.length() - 1))
-											.get(predicate.substring(0, predicate.length() - 1)).size(); i++) {
-
-										if (model.get(subject.substring(0, subject.length() - 1))
-												.get(predicate.substring(0, predicate.length() - 1)).get(i)
-												.containsKey(object.substring(0, object.length() - 1))) {
-
-											if (model.get(subject.substring(0, subject.length() - 1))
-													.get(predicate.substring(0, predicate.length() - 1)).get(i)
-													.get(object.substring(0, object.length() - 1)) == 0.0) {
-												fact.setFactValue(-1.0);
-											} else {
-												fact.setFactValue(model.get(subject.substring(0, subject.length() - 1))
-														.get(predicate.substring(0, predicate.length() - 1)).get(i)
-														.get(object.substring(0, object.length() - 1)));
-											}
-											break;
-										} else {
-											fact.setFactValue(-1.0);
-										}
-
-									}
-
+							try {
+								subject = subject.substring(0, subject.length() - 1);
+								object = object.substring(0, object.length() - 1);
+								if (subject.contains("'s")) {
+									subject = subject.split("'s")[0].substring(0, subject.split("'s")[0].length() - 1);
+									//predicate = subject.split("'s")[1].substring(1, subject.split("'s")[1].length());
 								}
+								if (subject.contains("'")) {
+									subject = subject.split("'")[0].substring(0, subject.split("'")[0].length() - 1);
+									//predicate = subject.split("'")[1].substring(1, subject.split("'")[1].length());
+								}
+								if (WebCrawler.scraping(subject, predicate, object)) {
+									fact.setFactValue(1.0);
+								} else {
+									fact.setFactValue(-1.0);
+								}
+								System.out.println(subject + " searched finished");
+							} catch (IOException e) {
+								System.err.println(subject + " not found");
+								fact.setFactValue(0.0);
 							}
+
 							c++;
 						}
 					}
@@ -207,8 +205,9 @@ public class Checker {
 			BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(fos));
 
 			for (int i = 0; i < this.factList.size(); i++) {
-				bw.write("<http://swc2017.aksw.org/task2/dataset/"+this.factList.get(i).getFactId()+"> <http://swc2017.aksw.org/hasTruthValue> \""
-						+this.factList.get(i).getFactValue()+"\"^^<http://www.w3.org/2001/XMLSchema#double> .");
+				bw.write("<http://swc2017.aksw.org/task2/dataset/" + this.factList.get(i).getFactId()
+						+ "> <http://swc2017.aksw.org/hasTruthValue> \"" + this.factList.get(i).getFactValue()
+						+ "\"^^<http://www.w3.org/2001/XMLSchema#double> .");
 				bw.newLine();
 			}
 
@@ -217,7 +216,7 @@ public class Checker {
 			// TODO: handle exception
 			e.printStackTrace();
 		}
-		System.out.println("file written at "+ filePath);
+		System.out.println("file written at " + filePath);
 	}
 
 	public String getFilePath() {
