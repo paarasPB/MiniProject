@@ -5,6 +5,7 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -45,55 +46,64 @@ public class Checker {
 				factList.add(fact);
 				for (Sentence sent : new Document(fact.getFactString()).sentences()) {
 
+					int c = 0;
 					for (RelationTriple triple : sent.openieTriples()) {
 
-						// System.out.println(triple + " == " + fact.getFactValue());
+						if (c == 0) {
+							// System.out.println(triple + " == " + fact.getFactValue());
 
-						String subject = "";
-						for (CoreLabel coreLabel : triple.subject) {
-							subject += coreLabel.originalText() + "_";
+							String subject = "";
+							for (CoreLabel coreLabel : triple.subject) {
+								subject += coreLabel.originalText() + "_";
 
-						}
-						// System.out.println("subjects: " + subject.substring(0, subject.length() -
-						// 1));
+							}
+							// System.out.println("subjects: " + subject.substring(0, subject.length() -
+							// 1));
 
-						String object = "";
+							String object = "";
 
-						for (CoreLabel coreLabel : triple.object) {
-							object += coreLabel.originalText() + "_";
-						}
-						// System.out.println("objects: " + object.substring(0, object.length() - 1));
+							for (CoreLabel coreLabel : triple.object) {
+								object += coreLabel.originalText() + "_";
+							}
+							// System.out.println("objects: " + object.substring(0, object.length() - 1));
 
-						String predicate = "";
-						for (CoreLabel coreLabel : triple.relation) {
-							predicate += coreLabel.originalText() + "_";
-						}
-						// System.out.println("predicate: " + predicate.substring(0, predicate.length()
-						// - 1));
+							String predicate = "";
+							for (CoreLabel coreLabel : triple.relation) {
+								predicate += coreLabel.originalText() + "_";
+							}
+							// System.out.println("predicate: " + predicate.substring(0, predicate.length()
+							// - 1));
 
-						if (model.containsKey(subject.substring(0, subject.length() - 1))) {
+							if (model.containsKey(subject.substring(0, subject.length() - 1))) {
 
-							if (model.get(subject.substring(0, subject.length() - 1))
-									.containsKey(predicate.substring(0, predicate.length() - 1))) {
+								if (model.get(subject.substring(0, subject.length() - 1))
+										.containsKey(predicate.substring(0, predicate.length() - 1))) {
 
-								for (int i = 0; i < model.get(subject.substring(0, subject.length() - 1))
-										.get(predicate.substring(0, predicate.length() - 1)).size(); i++) {
+									for (int i = 0; i < model.get(subject.substring(0, subject.length() - 1))
+											.get(predicate.substring(0, predicate.length() - 1)).size(); i++) {
 
-									if (model.get(subject.substring(0, subject.length() - 1))
-											.get(predicate.substring(0, predicate.length() - 1)).get(i)
-											.containsKey(object.substring(0, object.length() - 1))) {
-										fact.setFactValue(model.get(subject.substring(0, subject.length() - 1))
+										if (model.get(subject.substring(0, subject.length() - 1))
 												.get(predicate.substring(0, predicate.length() - 1)).get(i)
-												.get(object.substring(0, object.length() - 1)));
-									}
-									else {
-										fact.setFactValue(0.0);
+												.containsKey(object.substring(0, object.length() - 1))) {
+
+											if (model.get(subject.substring(0, subject.length() - 1))
+													.get(predicate.substring(0, predicate.length() - 1)).get(i)
+													.get(object.substring(0, object.length() - 1)) == 0.0) {
+												fact.setFactValue(-1.0);
+											} else {
+												fact.setFactValue(model.get(subject.substring(0, subject.length() - 1))
+														.get(predicate.substring(0, predicate.length() - 1)).get(i)
+														.get(object.substring(0, object.length() - 1)));
+											}
+										} else {
+											fact.setFactValue(-1.0);
+										}
+
 									}
 
 								}
-
 							}
-
+							c++;
 						}
 					}
 				}
@@ -101,6 +111,79 @@ public class Checker {
 			}
 		}
 		return factList;
+
+	}
+
+	public Fact checkFact(String factString) {
+
+		Fact fact = new Fact(Integer.valueOf(factString.split("\t")[0]), factString.split("\t")[1].trim(), 0.0);
+		// System.out.println(fact.getFactString() + " == " + fact.getFactValue());
+
+		for (Sentence sent : new Document(fact.getFactString()).sentences()) {
+
+			int c = 0;
+			for (RelationTriple triple : sent.openieTriples()) {
+
+				if (c == 0) {
+
+					// System.out.println(triple + " == " + fact.getFactValue());
+
+					String subject = "";
+					for (CoreLabel coreLabel : triple.subject) {
+						subject += coreLabel.originalText() + "_";
+
+					}
+					System.out.println("subjects: " + subject.substring(0, subject.length() - 1));
+
+					String object = "";
+
+					for (CoreLabel coreLabel : triple.object) {
+						object += coreLabel.originalText() + "_";
+					}
+					System.out.println("objects: " + object.substring(0, object.length() - 1));
+
+					String predicate = "";
+					for (CoreLabel coreLabel : triple.relation) {
+						predicate += coreLabel.originalText() + "_";
+					}
+					System.out.println("predicate: " + predicate.substring(0, predicate.length() - 1));
+
+					if (model.containsKey(subject.substring(0, subject.length() - 1))) {
+
+						if (model.get(subject.substring(0, subject.length() - 1))
+								.containsKey(predicate.substring(0, predicate.length() - 1))) {
+
+							for (int i = 0; i < model.get(subject.substring(0, subject.length() - 1))
+									.get(predicate.substring(0, predicate.length() - 1)).size(); i++) {
+
+								if (model.get(subject.substring(0, subject.length() - 1))
+										.get(predicate.substring(0, predicate.length() - 1)).get(i)
+										.containsKey(object.substring(0, object.length() - 1))) {
+
+									if (model.get(subject.substring(0, subject.length() - 1))
+											.get(predicate.substring(0, predicate.length() - 1)).get(i)
+											.get(object.substring(0, object.length() - 1)) == 0.0) {
+										fact.setFactValue(-1.0);
+									} else {
+										fact.setFactValue(model.get(subject.substring(0, subject.length() - 1))
+												.get(predicate.substring(0, predicate.length() - 1)).get(i)
+												.get(object.substring(0, object.length() - 1)));
+									}
+
+								} else {
+									fact.setFactValue(-1.0);
+								}
+
+							}
+
+						}
+
+					}
+					c++;
+				}
+			}
+		}
+		return fact;
 
 	}
 

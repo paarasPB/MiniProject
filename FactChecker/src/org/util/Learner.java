@@ -132,8 +132,12 @@ public class Learner {
 		Checker checkerForTestData = learner.createChecker();
 
 		List<Fact> factsResults = checkerForTestData.checkFacts("SNLP2019_test.tsv");
+
 		for (Fact fact : factsResults) {
 			System.out.println(fact.getFactString() + " has value: " + fact.getFactValue());
 		}
+		
+		Fact factsResult = checkerForTestData.checkFact("1\tJohn A. Macdonald's death place is New York City.");
+		System.out.println(factsResult.getFactString()+" got: "+ factsResult.getFactValue());
 	}
 }
