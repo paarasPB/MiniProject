@@ -142,7 +142,7 @@ public class Parsing {
 
 			//if (!line.startsWith("FactID")) {
 
-		String line="1\tThe Aristocats stars Heather Graham\t1.0";
+		String line="1\tI Will Fear No Evil's author is Iain Banks.\t1.0";
 				Fact fact = new Fact(Integer.valueOf(line.split("\t")[0]), line.split("\t")[1].trim(),
 						Double.valueOf(line.split("\t")[2]));
 				// Fact fact = new Fact();

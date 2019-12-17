@@ -13,12 +13,14 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.stream.Collectors;
 
 import edu.stanford.nlp.ie.util.RelationTriple;
 import edu.stanford.nlp.ling.CoreLabel;
 import edu.stanford.nlp.simple.Document;
 import edu.stanford.nlp.simple.Sentence;
+import edu.stanford.nlp.util.PropertiesUtils;
 
 public class UnSupervisedChecker {
 
@@ -28,6 +30,9 @@ public class UnSupervisedChecker {
 
 	public static void main(String[] args) {
 		UnSupervisedChecker checker = new UnSupervisedChecker();
+		// System.out.println(checker.checkFact("1\tApplied Minds' foundation place is
+		// Stanford University.").getFactValue());
+
 		checker.checkFacts("SNLP2019_test.tsv");
 		checker.writeResults("result.ttl");
 	}
@@ -61,52 +66,70 @@ public class UnSupervisedChecker {
 					for (RelationTriple triple : sent.openieTriples()) {
 
 						if (c == 0) {
+
 							// System.out.println(triple + " == " + fact.getFactValue());
 
 							String subject = "";
 							for (CoreLabel coreLabel : triple.subject) {
-								subject += coreLabel.originalText() + "_";
+								subject += coreLabel.originalText() + " ";
 
 							}
-							// System.out.println("subjects: " + subject.substring(0, subject.length() -
-							// 1));
 
 							String object = "";
 
 							for (CoreLabel coreLabel : triple.object) {
-								object += coreLabel.originalText() + "_";
+								object += coreLabel.originalText() + " ";
 							}
-							// System.out.println("objects: " + object.substring(0, object.length() - 1));
 
 							String predicate = "";
 							for (CoreLabel coreLabel : triple.relation) {
-								predicate += coreLabel.originalText() + "_";
+								predicate += coreLabel.originalText() + " ";
 							}
-							// System.out.println("predicate: " + predicate.substring(0, predicate.length()
-							// - 1));
 
 							try {
-								subject = subject.substring(0, subject.length() - 1);
-								object = object.substring(0, object.length() - 1);
-								if (subject.contains("'s")) {
-									subject = subject.split("'s")[0].substring(0, subject.split("'s")[0].length() - 1);
-									//predicate = subject.split("'s")[1].substring(1, subject.split("'s")[1].length());
+
+								if (fact.getFactString().contains("author")) {
+
+									String parts[] = fact.getFactString().split(" ");
+									if (parts[parts.length - 1].equalsIgnoreCase("author.")) {
+
+										object = fact.getFactString().split("is")[0].trim();
+										subject = fact.getFactString().split("is")[1].split("'")[0].trim();
+
+									} else {
+										object = fact.getFactString().split("is")[1].trim();
+										subject = fact.getFactString().split("is")[0].split("'")[0].trim();
+									}
+									predicate = "author";
 								}
-								if (subject.contains("'")) {
-									subject = subject.split("'")[0].substring(0, subject.split("'")[0].length() - 1);
-									//predicate = subject.split("'")[1].substring(1, subject.split("'")[1].length());
+
+								else {
+									if (subject.contains("'")) {
+										String[] parts = subject.split("'");
+										subject = parts[0].trim();
+										predicate = parts[1].replaceAll("s ", "").trim();
+									} else if (object.contains("'")) {
+										String temp_subject = subject;
+
+										String[] parts = object.split("'");
+										subject = parts[0].trim();
+										predicate = parts[1].replaceAll("s ", "").trim();
+										object = temp_subject;
+									}
+
 								}
-								if (WebCrawler.scraping(subject, predicate, object)) {
+
+								if (WebCrawler.scraping(subject.trim(), predicate.trim(), object.trim())) {
 									fact.setFactValue(1.0);
+									// break;
 								} else {
 									fact.setFactValue(-1.0);
 								}
-								System.out.println(subject + " searched finished");
+								System.out.println(subject + " ; predicate; " + predicate + "  ;object ;" + object);
 							} catch (IOException e) {
 								System.err.println(subject + " not found");
 								fact.setFactValue(0.0);
 							}
-
 							c++;
 						}
 					}
@@ -134,55 +157,68 @@ public class UnSupervisedChecker {
 
 					String subject = "";
 					for (CoreLabel coreLabel : triple.subject) {
-						subject += coreLabel.originalText() + "_";
+						subject += coreLabel.originalText() + " ";
 
 					}
-					System.out.println("subjects: " + subject.substring(0, subject.length() - 1));
 
 					String object = "";
 
 					for (CoreLabel coreLabel : triple.object) {
-						object += coreLabel.originalText() + "_";
+						object += coreLabel.originalText() + " ";
 					}
-					System.out.println("objects: " + object.substring(0, object.length() - 1));
 
 					String predicate = "";
 					for (CoreLabel coreLabel : triple.relation) {
-						predicate += coreLabel.originalText() + "_";
+						predicate += coreLabel.originalText() + " ";
 					}
-					System.out.println("predicate: " + predicate.substring(0, predicate.length() - 1));
 
-					if (model.containsKey(subject.substring(0, subject.length() - 1))) {
+					try {
 
-						if (model.get(subject.substring(0, subject.length() - 1))
-								.containsKey(predicate.substring(0, predicate.length() - 1))) {
+						System.out.println("subjects: " + subject);
+						System.out.println("predicate: " + predicate);
+						System.out.println("objects: " + object);
 
-							for (int i = 0; i < model.get(subject.substring(0, subject.length() - 1))
-									.get(predicate.substring(0, predicate.length() - 1)).size(); i++) {
+						if (fact.getFactString().contains("author")) {
 
-								if (model.get(subject.substring(0, subject.length() - 1))
-										.get(predicate.substring(0, predicate.length() - 1)).get(i)
-										.containsKey(object.substring(0, object.length() - 1))) {
+							String parts[] = fact.getFactString().split(" ");
+							if (parts[parts.length - 1].equalsIgnoreCase("author.")) {
 
-									if (model.get(subject.substring(0, subject.length() - 1))
-											.get(predicate.substring(0, predicate.length() - 1)).get(i)
-											.get(object.substring(0, object.length() - 1)) == 0.0) {
-										fact.setFactValue(-1.0);
+								object = fact.getFactString().split("is")[0].trim();
+								subject = fact.getFactString().split("is")[1].split("'")[0].trim();
 
-									} else {
-										fact.setFactValue(model.get(subject.substring(0, subject.length() - 1))
-												.get(predicate.substring(0, predicate.length() - 1)).get(i)
-												.get(object.substring(0, object.length() - 1)));
-									}
-									break;
-								} else {
-									fact.setFactValue(-1.0);
-								}
+							} else {
+								object = fact.getFactString().split("is")[1].trim();
+								subject = fact.getFactString().split("is")[0].split("'")[0].trim();
+							}
+							predicate = "author";
+						}
 
+						else {
+							if (subject.contains("'")) {
+								String[] parts = subject.split("'");
+								subject = parts[0].trim();
+								predicate = parts[1].trim();
+							} else if (object.contains("'")) {
+								String temp_subject = subject;
+
+								String[] parts = object.split("'");
+								subject = parts[0].trim();
+								predicate = parts[1].trim();
+								object = temp_subject;
 							}
 
 						}
 
+						if (WebCrawler.scraping(subject, predicate, object)) {
+							fact.setFactValue(1.0);
+							// break;
+						} else {
+							fact.setFactValue(-1.0);
+						}
+						System.out.println(subject + " ; predicate; " + predicate + "  ;object ;" + object);
+					} catch (IOException e) {
+						System.err.println(subject + " not found");
+						fact.setFactValue(0.0);
 					}
 					c++;
 				}

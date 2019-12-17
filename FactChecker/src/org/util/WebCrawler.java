@@ -14,7 +14,11 @@ import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLEncoder;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 
 public class WebCrawler {
 	private static final int MAX_DEPTH = 2;
@@ -51,24 +55,44 @@ public class WebCrawler {
 			String line = null;
 			while (null != (line = br.readLine())) {
 				line = line.trim();
+
 				if (!line.startsWith("|") && !line.startsWith("{") && !line.startsWith("}")
 						&& !line.startsWith("<center>") && !line.startsWith("---")) {
 					text += line;
 				}
-				// if (text.length() > 500) {
-				// break;
-				// }
+
+				/*
+				 * if (line.startsWith("<table class=\"infobox ")) { text += line; }
+				 */
+
 			}
-			//System.out.println(text.toLowerCase().contains(object.toLowerCase()));
+			//System.out.println(text);
 		}
-		return text.toLowerCase().contains(object.toLowerCase());
+		Map<String, String> lookUp = new HashMap<String, String>();
+		lookUp.put("nascence place", "born");
+		lookUp.put("birth place", "born");
+		lookUp.put("innovation place", "headquarters");
+		lookUp.put("death place", "died");
+		lookUp.put("last place", "died");
+		lookUp.put("better half", "spouse");
+		lookUp.put("stars", "starring");
+		lookUp.put("Actually stars", "starring");
+		lookUp.put("nascence place", "born");
+		lookUp.put("foundation place", "headquaters");
+
+		if (lookUp.containsKey(predicate.toLowerCase().trim())) {
+			predicate = lookUp.get(predicate.toLowerCase().trim());
+		}
+		System.out.println(predicate);
+		return text.toLowerCase().contains(object.toLowerCase().trim())
+				&& text.toLowerCase().contains(predicate.toLowerCase().trim());
 
 	}
 
 	public static void main(String[] args) {
 		// new WebCrawler().getPageLinks("https://www.wikipedia.org", 1);
 		try {
-			 WebCrawler.scraping("Ginger's", "stars", "Cairo");
+			System.out.println(WebCrawler.scraping("Kelis", " spouse ", "Nas"));
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
