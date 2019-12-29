@@ -66,7 +66,7 @@ public class WebCrawler {
 				 */
 
 			}
-			//System.out.println(text);
+
 		}
 		Map<String, String> lookUp = new HashMap<String, String>();
 		lookUp.put("nascence place", "born");
@@ -83,16 +83,46 @@ public class WebCrawler {
 		if (lookUp.containsKey(predicate.toLowerCase().trim())) {
 			predicate = lookUp.get(predicate.toLowerCase().trim());
 		}
-		System.out.println(predicate);
-		return text.toLowerCase().contains(object.toLowerCase().trim())
-				&& text.toLowerCase().contains(predicate.toLowerCase().trim());
+
+		String validText = "";
+		text= text.toLowerCase().replaceAll("[^a-zA-Z0-9]", " ");
+		object= object.toLowerCase().replaceAll("[^a-zA-Z0-9]", " ");
+		if (text.toLowerCase().contains(predicate.toLowerCase().trim())) {
+
+			int fromIndex = 0;
+			while (text.toLowerCase().indexOf(predicate.toLowerCase().trim(), fromIndex) != -1) { // search for all
+																									// occurences of
+																									// predicate
+				int indexPredicate = text.toLowerCase().indexOf(predicate.toLowerCase().trim(), fromIndex);
+				//System.out.println(indexPredicate);
+			
+					validText += (String) text.subSequence(Math.max(indexPredicate - 1000,0), indexPredicate) + " ";	
+				
+				
+				validText += (String) text.subSequence(indexPredicate, Math.min(indexPredicate + 1000,text.length()));
+				// System.out.println(validText);
+				//System.out.println(" index of predicate " + text.toLowerCase().indexOf(predicate.toLowerCase().trim(), fromIndex)
+				//		+ " index of object " + text.toLowerCase().indexOf(object.toLowerCase().trim(), fromIndex));
+
+				if (validText.toLowerCase().contains(object.toLowerCase().trim())
+						&& validText.toLowerCase().contains(predicate.toLowerCase().trim())) {
+					return true;
+				}
+
+				fromIndex = text.toLowerCase().indexOf(predicate.toLowerCase().trim(), fromIndex)
+						+ predicate.toLowerCase().trim().length() + 1;
+			}
+
+		}
+
+		return false;
 
 	}
 
 	public static void main(String[] args) {
 		// new WebCrawler().getPageLinks("https://www.wikipedia.org", 1);
 		try {
-			System.out.println(WebCrawler.scraping("Kelis", " spouse ", "Nas"));
+			System.out.println(WebCrawler.scraping("Last Action Hero  ", "stars", "Robert Prosky"));
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
